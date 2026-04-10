@@ -1,0 +1,97 @@
+{
+  "tasks": [
+    {
+      "id": "seed-1",
+      "title": "Revoir les emails du matin",
+      "description": "Traiter les emails importants avant 9h",
+      "priority": "high",
+      "status": "done",
+      "category": "work",
+      "dueTime": "09:00",
+      "createdAt": "2026-04-10T00:00:00.000Z",
+      "completedAt": "2026-04-10T00:00:00.000Z"
+    },
+    {
+      "id": "seed-2",
+      "title": "Réunion d'équipe hebdomadaire",
+      "description": "Présenter l'avancement du sprint",
+      "priority": "urgent",
+      "status": "done",
+      "category": "work",
+      "dueTime": "01:30",
+      "createdAt": "2026-04-10T00:00:00.000Z",
+      "completedAt": "2026-04-10T11:54:42.703Z"
+    },
+    {
+      "id": "seed-3",
+      "title": "Finir la feature de paiement",
+      "description": "Implémenter le webhook Stripe",
+      "priority": "high",
+      "status": "done",
+      "category": "work",
+      "dueTime": "14:00",
+      "createdAt": "2026-04-10T00:00:00.000Z",
+      "completedAt": "2026-04-10T11:54:51.646Z"
+    },
+    {
+      "id": "seed-4",
+      "title": "Séance de sport",
+      "priority": "medium",
+      "status": "todo",
+      "category": "health",
+      "dueTime": "18:00",
+      "createdAt": "2026-04-10T00:00:00.000Z"
+    },
+    {
+      "id": "seed-5",
+      "title": "Lire 30 minutes",
+      "description": "Chapitre 5 de Clean Architecture",
+      "priority": "low",
+      "status": "todo",
+      "category": "learning",
+      "dueTime": "21:00",
+      "createdAt": "2026-04-10T00:00:00.000Z"
+    },
+    {
+      "title": "Trier les emails reçus",
+      "priority": "high",
+      "category": "work",
+      "status": "todo",
+      "dueTime": "09:00",
+      "id": "_AbFYTE"
+    },
+    {
+      "title": "Identifier les messages prioritaires",
+      "priority": "high",
+      "category": "work",
+      "status": "todo",
+      "dueTime": "09:00",
+      "id": "9pu9kFb"
+    },
+    {
+      "title": "Répondre aux urgences",
+      "priority": "high",
+      "category": "work",
+      "status": "todo",
+      "dueTime": "09:00",
+      "id": "buzl_6J"
+    },
+    {
+      "title": "Archiver les messages traités",
+      "priority": "high",
+      "category": "work",
+      "status": "done",
+      "dueTime": "09:00",
+      "id": "dWJ2XA8",
+      "completedAt": "2026-04-10T11:59:09.426Z"
+    },
+    {
+      "title": "Planifier les actions de suivi",
+      "priority": "high",
+      "category": "work",
+      "status": "todo",
+      "dueTime": "09:00",
+      "id": "gVLA77Z"
+    }
+  ]
+}
