@@ -17,6 +17,19 @@ export interface WeekInsightsResponse {
   sections: WeekInsightSection[];
 }
 
+export interface RagCitation {
+  source: string;
+  excerpt: string;
+}
+
+export interface RagAskResponse {
+  answer: string;
+  citations: RagCitation[];
+  retrieved: RagCitation[];
+  retrievalMethod?: 'lexical' | 'embedding';
+  includeTasks?: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AiService {
   private readonly http = inject(HttpClient);
@@ -29,6 +42,13 @@ export class AiService {
   readonly insightsError = signal<string | null>(null);
   readonly lastInsights = signal<WeekInsightSection[] | null>(null);
 
+  readonly ragLoading = signal(false);
+  readonly ragError = signal<string | null>(null);
+  readonly lastRagAnswer = signal<string | null>(null);
+  readonly lastRagCitations = signal<RagCitation[] | null>(null);
+  readonly lastRagRetrieved = signal<RagCitation[] | null>(null);
+  readonly lastRagMeta = signal<{ retrievalMethod?: string; includeTasks?: boolean } | null>(null);
+
   clearSubtasksState(): void {
     this.lastSubtasks.set(null);
     this.subtasksError.set(null);
@@ -37,6 +57,14 @@ export class AiService {
   clearInsightsState(): void {
     this.lastInsights.set(null);
     this.insightsError.set(null);
+  }
+
+  clearRagState(): void {
+    this.lastRagAnswer.set(null);
+    this.lastRagCitations.set(null);
+    this.lastRagRetrieved.set(null);
+    this.lastRagMeta.set(null);
+    this.ragError.set(null);
   }
 
   async suggestSubtasks(title: string, description?: string): Promise<void> {
@@ -83,6 +111,35 @@ export class AiService {
     }
   }
 
+  async ragAsk(question: string, topK = 4, includeTasks = false): Promise<void> {
+    this.ragLoading.set(true);
+    this.ragError.set(null);
+    this.lastRagAnswer.set(null);
+    this.lastRagCitations.set(null);
+    this.lastRagRetrieved.set(null);
+    this.lastRagMeta.set(null);
+    try {
+      const res = await firstValueFrom(
+        this.http.post<RagAskResponse>(this.url('/api/ai/rag/ask'), {
+          question: question.trim(),
+          topK,
+          includeTasks,
+        }),
+      );
+      this.lastRagAnswer.set(res.answer ?? '');
+      this.lastRagCitations.set(res.citations ?? []);
+      this.lastRagRetrieved.set(res.retrieved ?? []);
+      this.lastRagMeta.set({
+        retrievalMethod: res.retrievalMethod,
+        includeTasks: res.includeTasks,
+      });
+    } catch (e: unknown) {
+      this.ragError.set(this.mapHttpError(e));
+    } finally {
+      this.ragLoading.set(false);
+    }
+  }
+
   private url(path: string): string {
     const base = environment.apiBaseUrl.replace(/\/$/, '');
     return `${base}${path}`;
@@ -98,13 +155,13 @@ export class AiService {
         }
       }
       if (e.status === 0) {
-        return 'Impossible de joindre l’API. Vérifiez que le serveur tourne (npm run dev dans task-manager-api).';
+        return 'Impossible de joindre l\'API. Vérifiez que le serveur tourne.';
       }
       return e.message || 'Erreur réseau.';
     }
     if (e instanceof Error) {
       return e.message;
     }
-    return 'Une erreur inattendue s’est produite.';
+    return 'Une erreur inattendue s\'est produite.';
   }
 }

@@ -1,0 +1,8 @@
+Document de test RAG — vocabulaire sprint
+
+Ce fichier sert uniquement à tester la recherche RAG (lexicale ou embeddings).
+
+Le sprint est une période courte de développement. On y planifie des user stories,
+on tient des daily standups, et on fait une rétrospective en fin de sprint.
+
+Mots-clés utiles pour les tests : sprint, backlog, daily, rétrospective, vélocité.

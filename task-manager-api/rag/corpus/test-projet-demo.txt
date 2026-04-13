@@ -1,0 +1,10 @@
+Demo projet — notes internes
+
+Ce dépôt s’appelle « Demo projet ». Il contient task-manager (Angular) et task-manager-api (Express).
+
+Pour le développement local :
+- API sur le port 3000 par défaut.
+- Front Angular sur le port 4200.
+
+Les logs [rag] dans la console du serveur permettent de voir la réponse brute du LLM
+après un appel à POST /api/ai/rag/ask.

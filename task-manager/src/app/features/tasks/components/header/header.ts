@@ -41,6 +41,14 @@ import { TaskService } from '../../../../core/services/task.service';
           <button
             type="button"
             class="header__ai-toggle"
+            (click)="toggleRag()"
+            [attr.aria-expanded]="ragOpen()"
+          >
+            Assistant RAG
+          </button>
+          <button
+            type="button"
+            class="header__ai-toggle"
             (click)="toggleInsights()"
             [attr.aria-expanded]="insightsOpen()"
           >
@@ -57,6 +65,83 @@ import { TaskService } from '../../../../core/services/task.service';
           </div>
         </div>
       </div>
+
+      @if (ragOpen()) {
+        <div class="header__rag" role="region" aria-label="Assistant RAG sur le corpus projet">
+          <p class="header__rag-hint">
+            Corpus <code>rag/corpus/</code> ; recherche <strong>lexicale</strong> ou par <strong>embeddings</strong> si
+            <code>data/rag-embeddings.json</code> existe (<code>npm run rag:index</code>).
+          </p>
+          <label class="header__rag-check">
+            <input type="checkbox" [(ngModel)]="ragIncludeTasks" />
+            Inclure les tâches (<code>data/db.json</code>) dans le contexte (hybride)
+          </label>
+          <div class="header__rag-row">
+            <textarea
+              class="header__rag-input"
+              rows="2"
+              placeholder="Ex. : Où sont stockées les tâches ?"
+              [(ngModel)]="ragQuestion"
+            ></textarea>
+            <button
+              type="button"
+              class="header__ai-run"
+              (click)="runRag()"
+              [disabled]="ai.ragLoading() || !ragQuestion.trim()"
+            >
+              {{ ai.ragLoading() ? 'Réponse…' : 'Demander' }}
+            </button>
+            <button type="button" class="header__ai-close" (click)="closeRag()">Fermer</button>
+          </div>
+          @if (ai.ragError(); as rErr) {
+            <p class="header__insights-error">{{ rErr }}</p>
+          }
+          @if (ai.lastRagMeta(); as meta) {
+            <p class="header__rag-meta">
+              Récupération : {{ meta.retrievalMethod === 'embedding' ? 'embeddings' : 'lexicale' }}
+              @if (meta.includeTasks) {
+                <span> · tâches incluses</span>
+              }
+            </p>
+          }
+          @if (ai.lastRagAnswer(); as ans) {
+            <div class="header__rag-answer">
+              <h3 class="header__rag-answer-title">Réponse</h3>
+              <p class="header__rag-answer-text">{{ ans }}</p>
+            </div>
+          }
+          @if (ai.lastRagCitations(); as cites) {
+            @if (cites.length > 0) {
+              <div class="header__rag-cites">
+                <h4 class="header__rag-subtitle">Citations (modèle)</h4>
+                <ul class="header__rag-cite-list">
+                  @for (c of cites; track $index) {
+                    <li>
+                      <span class="header__rag-src">{{ c.source }}</span>
+                      <span class="header__rag-ex">{{ c.excerpt }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          }
+          @if (ai.lastRagRetrieved(); as ret) {
+            @if (ret.length > 0) {
+              <div class="header__rag-retrieved">
+                <h4 class="header__rag-subtitle">Passages retrouvés (recherche)</h4>
+                <ul class="header__rag-cite-list">
+                  @for (r of ret; track $index) {
+                    <li>
+                      <span class="header__rag-src">{{ r.source }}</span>
+                      <span class="header__rag-ex">{{ r.excerpt }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          }
+        </div>
+      }
 
       @if (insightsOpen()) {
         <div class="header__insights" role="region" aria-label="Conseils IA sur vos tâches">
@@ -96,6 +181,9 @@ export class HeaderComponent {
   readonly stats = this.taskService.stats;
   readonly search = signal('');
   readonly insightsOpen = signal(false);
+  readonly ragOpen = signal(false);
+  ragQuestion = '';
+  ragIncludeTasks = false;
 
   readonly today = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -112,6 +200,20 @@ export class HeaderComponent {
 
   closeInsights(): void {
     this.insightsOpen.set(false);
+  }
+
+  toggleRag(): void {
+    this.ragOpen.update((v) => !v);
+  }
+
+  closeRag(): void {
+    this.ragOpen.set(false);
+  }
+
+  runRag(): void {
+    const q = this.ragQuestion.trim();
+    if (!q) return;
+    void this.ai.ragAsk(q, 4, this.ragIncludeTasks);
   }
 
   loadInsights(): void {

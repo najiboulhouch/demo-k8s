@@ -1,0 +1,30 @@
+services:
+  api:
+    image: task-manager-api:v1
+    build:
+      context: ./task-manager-api
+    # Ne pas passer OPENROUTER_API_KEY ici avec ${VAR:-} : une chaîne vide écrase les valeurs des env_file.
+    env_file:
+      - path: ./task-manager-api/.env
+        required: false
+      - path: ./.env
+        required: false
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      CORS_ORIGIN: "http://localhost:8080"
+    volumes:
+      - ./task-manager-api/data:/app/data
+
+  web:
+    image: task-manager-web:v1
+    build:
+      context: ./task-manager
+      dockerfile: Dockerfile
+      args:
+        API_BASE_URL: "http://localhost:3000"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - api

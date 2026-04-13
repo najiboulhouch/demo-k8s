@@ -46,6 +46,7 @@ export class TaskService {
       this.tasks.set(tasks ?? []);
     } catch {
       // If API is down, keep current in-memory state (empty by default).
+      console.error('Impossible de rafraîchir les tâches depuis le serveur');
     }
   }
 

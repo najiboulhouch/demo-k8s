@@ -4,7 +4,7 @@
       "id": "seed-1",
       "title": "Revoir les emails du matin",
       "description": "Traiter les emails importants avant 9h",
-      "priority": "high",
+      "priority": "low",
       "status": "done",
       "category": "work",
       "dueTime": "09:00",
@@ -37,34 +37,37 @@
       "id": "seed-4",
       "title": "Séance de sport",
       "priority": "medium",
-      "status": "todo",
+      "status": "done",
       "category": "health",
       "dueTime": "18:00",
-      "createdAt": "2026-04-10T00:00:00.000Z"
+      "createdAt": "2026-04-10T00:00:00.000Z",
+      "completedAt": "2026-04-10T21:56:39.251Z"
     },
     {
       "id": "seed-5",
       "title": "Lire 30 minutes",
       "description": "Chapitre 5 de Clean Architecture",
       "priority": "low",
-      "status": "todo",
+      "status": "done",
       "category": "learning",
       "dueTime": "21:00",
-      "createdAt": "2026-04-10T00:00:00.000Z"
+      "createdAt": "2026-04-10T00:00:00.000Z",
+      "completedAt": "2026-04-10T21:55:54.759Z"
     },
     {
       "title": "Trier les emails reçus",
       "priority": "high",
       "category": "work",
-      "status": "todo",
+      "status": "done",
       "dueTime": "09:00",
-      "id": "_AbFYTE"
+      "id": "_AbFYTE",
+      "completedAt": "2026-04-12T12:50:30.691Z"
     },
     {
       "title": "Identifier les messages prioritaires",
       "priority": "high",
       "category": "work",
-      "status": "todo",
+      "status": "in-progress",
       "dueTime": "09:00",
       "id": "9pu9kFb"
     },
@@ -72,7 +75,7 @@
       "title": "Répondre aux urgences",
       "priority": "high",
       "category": "work",
-      "status": "todo",
+      "status": "in-progress",
       "dueTime": "09:00",
       "id": "buzl_6J"
     },
@@ -89,9 +92,50 @@
       "title": "Planifier les actions de suivi",
       "priority": "high",
       "category": "work",
-      "status": "todo",
+      "status": "done",
       "dueTime": "09:00",
-      "id": "gVLA77Z"
+      "id": "gVLA77Z",
+      "completedAt": "2026-04-11T13:04:17.187Z"
+    },
+    {
+      "id": "test-rag-1",
+      "title": "Daily standup sprint 2",
+      "description": "Blocage technique sur l’API RAG ; décider du correctif avant midi.",
+      "priority": "urgent",
+      "status": "todo",
+      "category": "work",
+      "dueTime": "10:30",
+      "createdAt": "2026-04-10T12:00:00.000Z"
+    },
+    {
+      "id": "test-rag-2",
+      "title": "Rédiger les notes de sprint",
+      "description": "Synthèse des décisions et actions pour le prochain sprint.",
+      "priority": "medium",
+      "status": "todo",
+      "category": "work",
+      "dueTime": "11:45",
+      "createdAt": "2026-04-10T12:00:00.000Z"
+    },
+    {
+      "id": "test-rag-3",
+      "title": "Point après-midi avec le PO",
+      "description": "Revue du backlog post-sprint.",
+      "priority": "high",
+      "status": "todo",
+      "category": "work",
+      "dueTime": "15:00",
+      "createdAt": "2026-04-10T12:00:00.000Z"
+    },
+    {
+      "id": "test-rag-4",
+      "title": "Préparer démo RAG pour l’équipe",
+      "description": "Montrer retrieval + citations sur corpus de test.",
+      "priority": "low",
+      "status": "in-progress",
+      "category": "learning",
+      "dueTime": "09:15",
+      "createdAt": "2026-04-10T12:00:00.000Z"
     }
   ]
 }

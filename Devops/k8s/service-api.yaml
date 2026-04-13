@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: task-manager-api
+  labels:
+    app.kubernetes.io/name: task-manager-api
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: task-manager-api
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http

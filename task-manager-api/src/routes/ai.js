@@ -1,33 +1,18 @@
 import { Router } from 'express';
-import OpenAI from 'openai';
+import { chatModel, createOpenRouterClient } from '../openrouterClient.js';
+import { loadCorpusChunks } from '../rag/loadCorpus.js';
+import { lexicalTopK } from '../rag/lexicalSearch.js';
+import { embeddingTopK } from '../rag/embeddingIndex.js';
+import { loadTasksAsChunks } from '../rag/tasksAsChunks.js';
 
 export const aiRouter = Router();
 
 function getOpenAI() {
-  // OpenRouter is OpenAI-SDK compatible via baseURL + apiKey.
-  // Keep OPENAI_API_KEY as a fallback for convenience.
-  const key = (process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY || '').trim();
-  if (!key) {
-    return null;
-  }
-
-  const referer = (process.env.OPENROUTER_REFERER || '').trim();
-  const title = (process.env.OPENROUTER_TITLE || 'Task Manager (local dev)').trim();
-
-  return new OpenAI({
-    baseURL: 'https://openrouter.ai/api/v1',
-    apiKey: key,
-    defaultHeaders: {
-      ...(referer ? { 'HTTP-Referer': referer } : {}),
-      // OpenRouter attribution header (optional but recommended)
-      'X-OpenRouter-Title': title,
-    },
-  });
+  return createOpenRouterClient();
 }
 
 function model() {
-  // OpenRouter model ids look like: "openai/gpt-4o-mini"
-  return (process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || 'openai/gpt-4o-mini').trim();
+  return chatModel();
 }
 
 function requireOpenAI(res) {
@@ -35,11 +20,20 @@ function requireOpenAI(res) {
   if (!client) {
     res.status(503).json({
       error:
-        'Service IA indisponible : définissez OPENAI_API_KEY dans un fichier .env (voir .env.example).',
+        'Service IA indisponible : définissez OPENROUTER_API_KEY (ou OPENAI_API_KEY). ' +
+        'En local : copiez task-manager-api/.env.example vers task-manager-api/.env et renseignez la clé (OpenRouter). ' +
+        'Avec Docker Compose : même fichier, ou un .env à la racine du dépôt contenant OPENROUTER_API_KEY=… Puis redémarrez l’API.',
     });
     return null;
   }
   return client;
+}
+
+function stripChunk(c) {
+  if (!c) return null;
+  const { score, ...rest } = c;
+  void score;
+  return rest;
 }
 
 function parseJsonContent(raw, res, fallbackMessage) {
@@ -180,6 +174,154 @@ Règles : 3 à 5 sections en français ; titres courts ; corps en paragraphes co
     res.json({ sections: cleaned });
   } catch (e) {
     console.error('week-insights', e);
+    const msg = e instanceof Error ? e.message : 'Erreur inconnue';
+    res.status(502).json({ error: `Échec de l’appel au modèle : ${msg}` });
+  }
+});
+
+aiRouter.post('/rag/ask', async (req, res) => {
+  const client = requireOpenAI(res);
+  if (!client) return;
+
+  const { question, topK, includeTasks } = req.body ?? {};
+  if (typeof question !== 'string' || !question.trim()) {
+    res.status(400).json({ error: 'Le champ « question » est requis.' });
+    return;
+  }
+
+  const k = Math.min(8, Math.max(1, Number(topK) || 4));
+  const q = question.trim();
+  const mergeTasks = includeTasks === true;
+  const useEmb = process.env.RAG_USE_EMBEDDINGS !== 'false';
+
+  let retrieved = [];
+  let retrievalMethod = 'lexical';
+
+  if (useEmb) {
+    try {
+      const emb = await embeddingTopK(client, q, k);
+      if (emb?.length) {
+        retrieved = emb.map(stripChunk).filter(Boolean);
+        retrievalMethod = 'embedding';
+      }
+    } catch (e) {
+      console.warn('rag embedding retrieval', e);
+    }
+  }
+
+  if (!retrieved.length) {
+    let chunks;
+    try {
+      chunks = await loadCorpusChunks();
+    } catch (e) {
+      console.error('rag corpus', e);
+      res.status(500).json({ error: 'Impossible de charger le corpus RAG.' });
+      return;
+    }
+    if (chunks.length) {
+      retrieved = lexicalTopK(q, chunks, k).map(stripChunk).filter(Boolean);
+      retrievalMethod = 'lexical';
+    }
+  }
+
+  if (!retrieved.length) {
+    res.status(503).json({
+      error:
+        'Aucun passage disponible : ajoutez des fichiers dans rag/corpus/ et/ou générez data/rag-embeddings.json (npm run rag:index).',
+    });
+    return;
+  }
+
+  if (mergeTasks) {
+    try {
+      const taskChunks = await loadTasksAsChunks();
+      const topTasks = lexicalTopK(q, taskChunks, Math.min(3, k));
+      const seen = new Set(retrieved.map((r) => r.id));
+      for (const t of topTasks) {
+        const n = stripChunk(t);
+        if (n && !seen.has(n.id)) {
+          seen.add(n.id);
+          retrieved.push(n);
+        }
+        if (retrieved.length >= 8) break;
+      }
+    } catch (e) {
+      console.warn('rag includeTasks', e);
+    }
+  }
+
+  const forContext = retrieved.slice(0, 8);
+  const contextBlocks = forContext.map((c, i) => {
+    const excerpt = c.text.length > 600 ? `${c.text.slice(0, 600)}…` : c.text;
+    return `[${i + 1}] source: ${c.source}\n${excerpt}`;
+  });
+
+  console.log('[rag] question:', q);
+  console.log('[rag] retrievalMethod:', retrievalMethod, '| includeTasks:', mergeTasks);
+  console.log(
+    '[rag] passages dans le prompt:',
+    forContext.map((c) => ({ source: c.source, len: c.text.length })),
+  );
+
+  const system = `Tu es un assistant qui répond en t'appuyant UNIQUEMENT sur le contexte fourni ci-dessous.
+Si le contexte ne permet pas de répondre, dis-le clairement en français.
+Réponds uniquement avec un JSON valide, sans markdown.
+Schéma exact : {"answer":"string","citations":[{"source":"string","excerpt":"string"}]}
+Règles : "citations" doit lister les sources du contexte réellement utilisées (chemins source) ; chaque excerpt est un court extrait (max ~200 caractères) tiré du contexte.`;
+
+  const user = `Question : ${question.trim()}
+
+Contexte (passages récupérés) :
+${contextBlocks.join('\n\n---\n\n')}`;
+
+  try {
+    const completion = await client.chat.completions.create({
+      model: model(),
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+      temperature: 0.3,
+      max_tokens: 1200,
+    });
+
+    const content = completion.choices[0]?.message?.content;
+    console.log('[rag] LLM brut (message.content):', content?.slice(0, 2000) ?? '(vide)');
+
+    const data = parseJsonContent(content, res, 'Réponse vide du modèle.');
+    if (!data) return;
+
+    const answer = typeof data.answer === 'string' ? data.answer.trim() : '';
+    console.log('[rag] LLM parsé — answer:', answer?.slice(0, 500));
+    console.log('[rag] LLM parsé — citations:', data.citations);
+    const citations = Array.isArray(data.citations)
+      ? data.citations
+          .map((c) => ({
+            source: typeof c?.source === 'string' ? c.source.trim() : '',
+            excerpt: typeof c?.excerpt === 'string' ? c.excerpt.trim() : '',
+          }))
+          .filter((c) => c.source && c.excerpt)
+          .slice(0, 8)
+      : [];
+
+    if (!answer) {
+      res.status(502).json({ error: 'Réponse vide ou invalide.' });
+      return;
+    }
+
+    res.json({
+      answer,
+      citations,
+      retrievalMethod,
+      includeTasks: mergeTasks,
+      retrieved: forContext.map((c) => ({
+        source: c.source,
+        excerpt: c.text.length > 220 ? `${c.text.slice(0, 220)}…` : c.text,
+      })),
+    });
+  } catch (e) {
+    console.error('rag/ask', e);
     const msg = e instanceof Error ? e.message : 'Erreur inconnue';
     res.status(502).json({ error: `Échec de l’appel au modèle : ${msg}` });
   }

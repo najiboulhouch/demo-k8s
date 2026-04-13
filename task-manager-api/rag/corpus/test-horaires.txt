@@ -1,0 +1,10 @@
+Document de test RAG — horaires et tâches
+
+Les tâches peuvent avoir une heure limite (dueTime) au format HH:mm sur 24 heures.
+
+Exemples :
+- Une tâche avant midi peut avoir une limite à 11:30 ou 12:00.
+- Une tâche l’après-midi peut être à 14:00 ou 16:45.
+
+Pour filtrer « avant 12h », il faut comparer l’heure courante à l’heure limite de chaque tâche.
+Ce fichier n’applique pas le filtre : il décrit le concept pour le corpus RAG.

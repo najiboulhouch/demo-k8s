@@ -1,0 +1,7 @@
+# Profil build pour Minikube / Ingress : même origine (navigateur → /api/* sur le même host).
+# Usage : docker compose -f docker-compose.yml -f docker-compose.k8s.yml build
+services:
+  web:
+    build:
+      args:
+        API_BASE_URL: ""

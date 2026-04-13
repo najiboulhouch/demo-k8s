@@ -1,3 +1,8 @@
+---
+description: 
+alwaysApply: true
+---
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -18,10 +23,12 @@ Démarrer l’API **avant** d’utiliser les boutons IA dans l’app (sinon erre
 
 ```bash
 cd ../task-manager-api
-cp .env.example .env   # puis renseigner OPENAI_API_KEY
+cp .env.example .env   # puis renseigner OPENROUTER_API_KEY (ou OPENAI_API_KEY)
 npm install            # une fois
 npm run dev            # ou npm start — écoute sur http://localhost:3000
 ```
+
+Corpus RAG (fichiers `.md` / `.txt`) : `../task-manager-api/rag/corpus/`. Endpoint : `POST /api/ai/rag/ask` avec `{ "question": "...", "topK": 4, "includeTasks": false }`. Embeddings : dans `task-manager-api`, `npm run rag:index` (génère `data/rag-embeddings.json`) ; évaluation retrieval : `npm run rag:eval`.
 
 Santé : `GET http://localhost:3000/health` → `{ "ok": true }`.
 
@@ -43,7 +50,7 @@ All application state lives in `TaskService` (`src/app/core/services/task.servic
 - `filteredTasks` — `computed()` derived from both signals above
 - `stats` — `computed()` for header counters
 
-`AiService` (`src/app/core/services/ai.service.ts`) gère l’état des appels HTTP vers l’API (`subtasksLoading`, `lastSubtasks`, `insightsLoading`, `lastInsights`, etc.) avec des signals. Les requêtes utilisent `HttpClient` et `firstValueFrom` — pas de Subjects pour l’état global.
+`AiService` (`src/app/core/services/ai.service.ts`) gère l’état des appels HTTP vers l’API (`subtasksLoading`, `lastSubtasks`, `insightsLoading`, `lastInsights`, `ragLoading`, `lastRagAnswer`, etc.) avec des signals. Les requêtes utilisent `HttpClient` et `firstValueFrom` — pas de Subjects pour l’état global.
 
 Components inject `TaskService` directly and read computed signals in templates. There is no store library, no Subjects, no Observables.
 
@@ -51,13 +58,13 @@ Components inject `TaskService` directly and read computed signals in templates.
 
 ### Persistence
 
-`TaskService` reads from `localStorage` on init (key: `task-manager:tasks`) and writes on every mutation. On first load (empty storage), `getSeedData()` populates 5 demo tasks in French.
+`TaskService` synchronise les tâches avec l’API (`json-server` sur `../task-manager-api/data/db.json`) via `GET/POST/PATCH/DELETE` sur `/api/tasks`.
 
 ### Component tree
 
 ```
 App (root, inline template)
-├── HeaderComponent       — sticky bar, stats + search + panneau « Aperçu de la semaine (IA) »
+├── HeaderComponent       — sticky bar, stats + search + panneaux « Assistant RAG » et « Aperçu de la semaine (IA) »
 └── router-outlet
     └── TaskListComponent — lazy-loaded via loadComponent()
         ├── TaskItemComponent (×n) — single task card

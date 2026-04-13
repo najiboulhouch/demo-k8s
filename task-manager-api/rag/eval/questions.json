@@ -1,0 +1,10 @@
+[
+  {
+    "question": "Où sont stockées les tâches dans ce projet ?",
+    "expectedSourceSubstrings": ["rag/corpus", "db.json"]
+  },
+  {
+    "question": "Quelle variable d'environnement pour la clé OpenRouter ?",
+    "expectedSourceSubstrings": ["OPENROUTER_API_KEY", "rag/corpus"]
+  }
+]
