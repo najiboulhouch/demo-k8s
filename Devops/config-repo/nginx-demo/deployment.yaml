@@ -1,4 +1,4 @@
-appVersion: "1.0.0"
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx
@@ -12,13 +12,13 @@ spec:
     metadata:
       labels:
         app: nginx
-  spec:
-    containers:
-      - name: nginx
-        image: nginx:1.27
-        ports:
-          - containerPort: 80
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
