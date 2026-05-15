@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: nginx-demo
+  name: root-app
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/najiboulhouch/demo-k8s
     targetRevision: main
-    path: Devops/config-repo/nginx-demo
+    path: apps
   destination:
     server: https://kubernetes.default.svc
-    namespace: demo
+    namespace: argocd
   syncPolicy:
     automated:
       prune: true
