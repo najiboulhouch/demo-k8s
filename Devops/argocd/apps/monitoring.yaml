@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/najiboulhouch/demo-k8s
     targetRevision: main
-    path: Devops/config-repo/monitoring
+    path: Devops/argocd/monitoring
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
