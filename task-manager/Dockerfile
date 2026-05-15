@@ -33,10 +33,12 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY --from=build /app/static-html/ /usr/share/nginx/html/
 # Répertoires temporaires nginx (non-root) — même logique que dans nginx.conf (/tmp/...)
 RUN mkdir -p /tmp/nginx-client-body /tmp/nginx-proxy /tmp/nginx-fastcgi /tmp/nginx-uwsgi /tmp/nginx-scgi \
-    && chown -R nginx:nginx /usr/share/nginx/html /tmp/nginx-client-body /tmp/nginx-proxy \
+    && addgroup -S -g 10001 app \
+    && adduser -S -D -H -u 10001 -G app app \
+    && chown -R 10001:10001 /usr/share/nginx/html /tmp/nginx-client-body /tmp/nginx-proxy \
        /tmp/nginx-fastcgi /tmp/nginx-uwsgi /tmp/nginx-scgi
 
-USER nginx
+USER 10001:10001
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
   CMD wget -qO- http://127.0.0.1:8080/ >/dev/null || exit 1

@@ -16,6 +16,30 @@ spec:
       labels:
         {{- include "task-manager.api.podLabels" . | nindent 8 }}
     spec:
+      securityContext:
+        {{- toYaml .Values.api.podSecurityContext | nindent 8 }}
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: seed-db
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              if [ ! -f "{{ .Values.api.dbPath }}" ]; then
+                mkdir -p "$(dirname "{{ .Values.api.dbPath }}")"
+                cp /app/data/db.json "{{ .Values.api.dbPath }}"
+              fi
+          securityContext:
+            {{- toYaml .Values.api.securityContext | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            {{- toYaml .Values.api.seedDb.resources | nindent 12 }}
       containers:
         - name: api
           image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
@@ -28,6 +52,8 @@ spec:
               value: {{ .Values.api.port | quote }}
             - name: CORS_ORIGIN
               value: {{ .Values.api.corsOrigin | quote }}
+            - name: DB_PATH
+              value: {{ .Values.api.dbPath | quote }}
             {{- if or .Values.openrouter.existingSecret (and .Values.openrouter.createSecret .Values.openrouter.apiKey) }}
             - name: OPENROUTER_API_KEY
               valueFrom:
@@ -56,3 +82,13 @@ spec:
             {{- toYaml .Values.api.securityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

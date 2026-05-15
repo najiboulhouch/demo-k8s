@@ -16,6 +16,10 @@ spec:
       labels:
         {{- include "task-manager.web.podLabels" . | nindent 8 }}
     spec:
+      securityContext:
+        {{- toYaml .Values.web.podSecurityContext | nindent 8 }}
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: web
           image: "{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}"
@@ -39,3 +43,9 @@ spec:
             {{- toYaml .Values.web.securityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.web.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

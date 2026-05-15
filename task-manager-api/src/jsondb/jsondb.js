@@ -2,7 +2,7 @@ import jsonServer from 'json-server';
 import path from 'node:path';
 
 export function createJsonDbRouter() {
-  const dbPath = path.join(process.cwd(), 'data', 'db.json');
+  const dbPath = (process.env.DB_PATH || '').trim() || path.join(process.cwd(), 'data', 'db.json');
   const router = jsonServer.router(dbPath);
   const middlewares = jsonServer.defaults({ logger: false });
 

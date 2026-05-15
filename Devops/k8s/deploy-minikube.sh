@@ -76,7 +76,7 @@ kubectl patch svc ingress-nginx-controller -n ingress-nginx \
 
 echo "==> Build des images dans le Docker de Minikube (pas le Docker Desktop par défaut)"
 eval "$(minikube -p minikube docker-env)"
-docker compose -f docker-compose.yml -f docker-compose.k8s.yml build
+docker compose -f "$ROOT/Docker/docker-compose.yml" -f "$ROOT/Docker/docker-compose.k8s.yml" build
 
 resolve_openrouter_for_k8s || true
 

@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const DB_PATH = path.join(process.cwd(), 'data', 'db.json');
+const DB_PATH =
+  (process.env.DB_PATH || '').trim() || path.join(process.cwd(), 'data', 'db.json');
 
 /**
  * @returns {Promise<{ id: string, source: string, text: string }[]>}

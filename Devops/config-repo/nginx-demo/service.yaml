@@ -1,0 +1,11 @@
+appVersion: "1.0.0"
+kind: Service
+metadata:
+  name: nginx
+  namespace: demo
+spec:
+  selector:
+    app: nginx
+  ports:
+    - port: 80
+      targetPort: 80

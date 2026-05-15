@@ -16,9 +16,11 @@ COPY src ./src
 COPY rag ./rag
 COPY data ./data
 
-# Utilisateur non-root (image node : uid 1000)
-RUN chown -R node:node /app
-USER node
+# Utilisateur non-root "haut" (Trivy/K8s) : 10001:10001
+RUN addgroup --system --gid 10001 app \
+    && adduser --system --uid 10001 --gid 10001 --home /app --shell /usr/sbin/nologin app \
+    && chown -R 10001:10001 /app
+USER 10001:10001
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
