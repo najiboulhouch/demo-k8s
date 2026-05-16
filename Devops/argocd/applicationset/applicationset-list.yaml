@@ -7,15 +7,15 @@ spec:
   generators:
     - list:
         elements:
-          - app: nginx-demo-appset
+          - app: nginx-demo
             namespace: nginx-appset
-          - app: redis-appset
+          - app: redis
             namespace: redis-appset
-          - app: monitoring-appset
+          - app: monitoring
             namespace: monitoring-appset
   template:
       metadata:
-        name: '{{app}}'
+        name: '{{app}}-appset'
         namespace: '{{namespace}}'
       spec:
         project: default
