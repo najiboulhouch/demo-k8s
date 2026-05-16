@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: monitoring
+  name: root-app
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/najiboulhouch/demo-k8s
     targetRevision: main
-    path: Devops/argocd/monitoring
+    path: Devops/argocd/appsofapps/apps
   destination:
     server: https://kubernetes.default.svc
-    namespace: monitoring
+    namespace: argocd
   syncPolicy:
     automated:
       prune: true
