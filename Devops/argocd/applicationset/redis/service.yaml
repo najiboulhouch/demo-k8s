@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: redis
-  namespace: redis
+  namespace: redis-appset
 spec:
   selector:
     app: redis
