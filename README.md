@@ -1,213 +1,354 @@
-# Demo K8s 🚀
+# Demo K8s - Task Manager 🚀
 
-Un projet de démonstration complète pour Kubernetes avec une architecture moderne et scalable.
+Un projet de démonstration complet avec **Kubernetes**, **Helm**, **ArgoCD** et une architecture microservices moderne.
+
+Application complète de gestion de tâches déployée sur Kubernetes avec GitOps via ArgoCD.
 
 ## 📋 Vue d'ensemble
 
-Ce projet illustre les meilleures pratiques pour déployer et gérer des applications sur Kubernetes. Il inclut des composants frontend, backend et une infrastructure containerisée.
+Ce projet illustre une architecture d'application moderne avec :
+- **Frontend** : Angular (SPA)
+- **Backend** : API TypeScript/Node.js
+- **Orchestration** : Kubernetes
+- **Package Management** : Helm Charts
+- **GitOps** : ArgoCD pour le déploiement continu
 
-## 🛠️ Stack Technologique
-
-| Technologie | Utilisation | Pourcentage |
-|-------------|-------------|-----------|
-| **TypeScript** | Backend & Utilitaires | 39.2% |
-| **JavaScript** | Frontend & Scripts | 25.9% |
-| **SCSS** | Stylisation | 21.1% |
-| **Shell** | Automatisation & Déploiement | 7.4% |
-| **Dockerfile** | Containerisation | 3.3% |
-| **Go Template** | Configuration | 2.7% |
-| **HTML** | Templating | 0.4% |
-
-## 🎯 Fonctionnalités Principales
-
-- ✅ Déploiements Kubernetes optimisés
-- ✅ Application TypeScript/JavaScript
-- ✅ Styling SCSS moderne
-- ✅ Containerisation Docker
-- ✅ Scripts d'automatisation Shell
-- ✅ Configuration templating
-
-## 📁 Structure du Projet
+## 🏗️ Architecture
 
 ```
 demo-k8s/
-├── src/                    # Code source
-│   ├── backend/           # API TypeScript
-│   ├── frontend/          # Application JavaScript
-│   └── styles/            # Fichiers SCSS
-├── k8s/                   # Manifests Kubernetes
-│   ├── deployment.yaml
-│   ├── service.yaml
-│   └── config/
-├── docker/                # Fichiers Docker
+├── task-manager/              # 🎨 Frontend Angular
+│   ├── src/
+│   ├── angular.json
+│   ├── package.json
 │   └── Dockerfile
-├── scripts/               # Scripts Shell
-│   └── deploy.sh
-└── templates/             # Go Templates
+│
+├── task-manager-api/          # 🔌 Backend API TypeScript
+│   ├── src/
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── Dockerfile
+│
+└── Devops/                    # ☸️ Infrastructure
+    ├── k8s/                   # Manifests Kubernetes bruts
+    │   ├── deployment/
+    │   ├── service/
+    │   └── ingress/
+    ├── helm/                  # Helm Charts
+    │   ├── task-manager/
+    │   ├── task-manager-api/
+    │   └── values.yaml
+    └── argocd/                # Configuration ArgoCD
+        ├── applications/
+        └── projects/
 ```
+
+## 🛠️ Stack Technologique
+
+| Composant | Technologie | Utilisation |
+|-----------|------------|------------|
+| **Frontend** | Angular, TypeScript, SCSS | Interface utilisateur |
+| **Backend** | TypeScript, Node.js | API REST |
+| **DevOps** | Kubernetes, Helm, ArgoCD | Orchestration & GitOps |
+| **Containerisation** | Docker | Images & Registre |
+| **Infrastructure** | Go Templates | Configuration |
+
+## 📊 Composition du Projet
+
+- **TypeScript** : 39.2%
+- **JavaScript** : 25.9%
+- **SCSS** : 21.1%
+- **Shell** : 7.4%
+- **Dockerfile** : 3.3%
+- **Go Template** : 2.7%
+- **HTML** : 0.4%
 
 ## 🚀 Démarrage Rapide
 
 ### Prérequis
 
+```bash
+# Version minimale
 - Node.js 18+
 - Docker
-- Kubernetes (kubectl)
-- npm ou yarn
-
-### Installation
-
-```bash
-# Cloner le repository
-git clone https://github.com/najiboulhouch/demo-k8s.git
-cd demo-k8s
-
-# Installer les dépendances
-npm install
-
-# Construire le projet
-npm run build
+- Kubernetes (kubectl) 1.24+
+- Helm 3+
+- ArgoCD (optionnel pour GitOps)
 ```
 
-### Développement Local
+### Installation Locale
+
+#### 1. Frontend (Angular)
 
 ```bash
-# Démarrer le serveur de développement
+cd task-manager
+npm install
+npm start
+
+# L'app sera disponible sur http://localhost:4200
+```
+
+#### 2. Backend (API)
+
+```bash
+cd task-manager-api
+npm install
 npm run dev
 
-# Lancer les tests
-npm run test
-
-# Build production
-npm run build:prod
+# L'API sera disponible sur http://localhost:3000
 ```
 
-## 🐳 Docker
+## 🐳 Build Docker
 
-### Build l'image Docker
+### Frontend
 
 ```bash
-docker build -t demo-k8s:latest .
+cd task-manager
+docker build -t demo-k8s-task-manager:latest .
+docker push your-registry/demo-k8s-task-manager:latest
 ```
 
-### Lancer le conteneur
+### Backend
 
 ```bash
-docker run -p 3000:3000 demo-k8s:latest
+cd task-manager-api
+docker build -t demo-k8s-task-manager-api:latest .
+docker push your-registry/demo-k8s-task-manager-api:latest
 ```
 
 ## ☸️ Déploiement Kubernetes
 
-### Appliquer les manifests
+### Avec Manifests Bruts
 
 ```bash
-# Appliquer tous les manifests K8s
-kubectl apply -f k8s/
+cd Devops/k8s
+
+# Déployer tous les manifests
+kubectl apply -f deployment/
+kubectl apply -f service/
+kubectl apply -f ingress/
 
 # Vérifier le déploiement
-kubectl get deployments
 kubectl get pods
-kubectl get services
+kubectl get svc
+kubectl get ingress
 ```
 
-### Utiliser les scripts de déploiement
+### Avec Helm (Recommandé)
 
 ```bash
-# Script de déploiement automatisé
-./scripts/deploy.sh
+cd Devops/helm
+
+# Ajouter les repos Helm si nécessaire
+helm repo add stable https://charts.helm.sh/stable
+
+# Installer les charts
+helm install task-manager ./task-manager/
+helm install task-manager-api ./task-manager-api/
+
+# Lister les releases
+helm list
+
+# Mettre à jour
+helm upgrade task-manager ./task-manager/
+helm upgrade task-manager-api ./task-manager-api/
+
+# Désinstaller
+helm uninstall task-manager
+helm uninstall task-manager-api
 ```
 
-## 📦 Scripts Disponibles
+### Avec ArgoCD (GitOps)
 
 ```bash
-npm run dev          # Démarrer en mode développement
-npm run build        # Builder le projet
-npm run build:prod   # Builder pour la production
-npm run test         # Exécuter les tests
-npm run lint         # Linter le code
-npm run deploy       # Déployer sur K8s
+# Installer ArgoCD (si pas déjà fait)
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# Accéder à ArgoCD
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+# Se connecter à ArgoCD (par défaut: admin)
+argocd login localhost:8080
+
+# Déployer les applications ArgoCD
+cd Devops/argocd
+kubectl apply -f applications/
+kubectl apply -f projects/
+
+# Vérifier le statut
+argocd app list
+argocd app status task-manager
 ```
 
-## 🔒 Variables d'Environnement
+## 📝 Variables d'Environnement
 
-Créez un fichier `.env` à la racine du projet :
+### Backend (.env)
 
 ```env
-NODE_ENV=development
+NODE_ENV=production
 PORT=3000
-API_URL=http://localhost:3000
-DATABASE_URL=mongodb://localhost:27017/demo-k8s
+DATABASE_URL=mongodb://mongo:27017/task-manager
+CORS_ORIGIN=http://localhost:4200
+LOG_LEVEL=info
 ```
 
-## 📝 Configuration Kubernetes
+### Frontend (environment.ts)
 
-Les fichiers de configuration se trouvent dans le dossier `k8s/` :
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:3000/api'
+};
+```
 
-- `deployment.yaml` - Définit le déploiement des pods
-- `service.yaml` - Expose l'application
-- `config/` - Configurations templating avec Go Templates
+## 🔄 Flux de Déploiement
+
+```
+Git Push → ArgoCD Webhook → Détecte changement
+       ↓
+   Helm Charts → Valide les templates
+       ↓
+Kubernetes API → Applique les manifests
+       ↓
+   Pods déployés → Service expose l'app
+```
+
+## 📦 Scripts npm
+
+### Frontend
+
+```bash
+npm start              # Mode développement
+npm run build          # Build production
+npm run test           # Tests unitaires
+npm run lint           # Linter le code
+npm run serve:ssr      # SSR mode
+```
+
+### Backend
+
+```bash
+npm run dev            # Mode développement
+npm run build          # Compiler TypeScript
+npm run prod           # Mode production
+npm test               # Tests unitaires
+npm run lint           # Linter le code
+```
+
+## 🔐 Sécurité
+
+- Utiliser des **secrets Kubernetes** pour les données sensibles
+- Configurer les **NetworkPolicies** pour la communication
+- Mettre en place des **RBAC** pour le contrôle d'accès
+- Scanner les images Docker avec Trivy
+
+```bash
+# Appliquer les secrets
+kubectl create secret generic db-secret --from-literal=password=mysecret
+
+# Voir les secrets
+kubectl get secrets
+```
+
+## 📊 Monitoring & Logs
+
+```bash
+# Logs des pods
+kubectl logs -f deployment/task-manager
+kubectl logs -f deployment/task-manager-api
+
+# Port forward pour déboguer
+kubectl port-forward svc/task-manager 4200:80
+kubectl port-forward svc/task-manager-api 3000:3000
+
+# Vérifier les ressources
+kubectl top nodes
+kubectl top pods
+```
 
 ## 🧪 Tests
 
+### Frontend
+
 ```bash
-# Exécuter tous les tests
-npm run test
-
-# Tests avec couverture
-npm run test:coverage
-
-# Tests en mode watch
-npm run test:watch
+cd task-manager
+npm test
 ```
 
-## 🎨 Styles
+### Backend
 
-Les styles sont gérés avec **SCSS** pour une meilleure maintenabilité :
-
-```scss
-// Import des variables
-@import 'variables';
-
-// Utilisation des mixins
-@include responsive-mobile {
-  // Styles mobiles
-}
+```bash
+cd task-manager-api
+npm test
 ```
 
-## 📚 Documentation
+## 📚 Documentation Utile
 
-- [Documentation Kubernetes](https://kubernetes.io/docs/)
+- [Angular Documentation](https://angular.io/docs)
+- [Kubernetes Documentation](https://kubernetes.io/docs/)
+- [Helm Documentation](https://helm.sh/docs/)
+- [ArgoCD Documentation](https://argo-cd.readthedocs.io/)
 - [Docker Documentation](https://docs.docker.com/)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 
 ## 🤝 Contribution
 
 Les contributions sont les bienvenues ! Veuillez :
 
-1. Fork le projet
-2. Créer une branche (`git checkout -b feature/AmazingFeature`)
-3. Commiter les changements (`git commit -m 'Add some AmazingFeature'`)
-4. Pusher vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
+1. **Fork** le projet
+2. **Créer une branche** (`git checkout -b feature/AmazingFeature`)
+3. **Commiter** vos changements (`git commit -m 'Add AmazingFeature'`)
+4. **Pusher** (`git push origin feature/AmazingFeature`)
+5. **Ouvrir une Pull Request**
 
-## 📝 Licence
+## 📋 Checklist pour le Déploiement
+
+- [ ] Images Docker buildées et pushées
+- [ ] Secrets Kubernetes configurés
+- [ ] Values.yaml Helm adaptés
+- [ ] Ingress configuré avec domaine
+- [ ] ArgoCD configuré et synchronisé
+- [ ] Tests unitaires passants
+- [ ] Manifests validés (`kubectl apply --dry-run=client`)
+- [ ] Monitoring/Logs configurés
+- [ ] Backups configurés
+- [ ] Documentation à jour
+
+## 🐛 Troubleshooting
+
+### Pod ne démarre pas
+
+```bash
+kubectl describe pod <pod-name>
+kubectl logs <pod-name>
+```
+
+### Service inaccessible
+
+```bash
+kubectl get svc
+kubectl port-forward svc/task-manager 4200:80
+```
+
+### ArgoCD désynchronisé
+
+```bash
+argocd app sync task-manager
+argocd app refresh task-manager
+```
+
+## 📞 Contact & Support
+
+- **Auteur** : [Najib Oulhouch](https://github.com/najiboulhouch)
+- **Issues** : [GitHub Issues](https://github.com/najiboulhouch/demo-k8s/issues)
+- **Discussions** : [GitHub Discussions](https://github.com/najiboulhouch/demo-k8s/discussions)
+
+## 📄 Licence
 
 Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
-## 👤 Auteur
-
-**Najib Oulhouch**
-- GitHub: [@najiboulhouch](https://github.com/najiboulhouch)
-
-## 🆘 Support
-
-Pour toute question ou problème, veuillez ouvrir une [issue](https://github.com/najiboulhouch/demo-k8s/issues).
-
-## 📞 Contact
-
-- Email: [contact email si disponible]
-- Issues: [GitHub Issues](https://github.com/najiboulhouch/demo-k8s/issues)
-
 ---
 
-**Dernière mise à jour:** 2026-05-17
+**Dernière mise à jour** : 2026-05-17
+
+✨ **Merci d'utiliser Demo K8s !** ✨
